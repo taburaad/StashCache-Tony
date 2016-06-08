@@ -85,7 +85,6 @@ function doStashCpSingle {
 	## if someone has 'Size: ' in their file path, they have bigger problems than this not working.
 	mb=$((mySz/1000000))
 	tm=$((300+mb)) ## 5 minutes + 1MBps
-	month=$(date +%m)
 	xrdcpVersion="$(xrdcp -V 2>&1)"
 
 	## First attempt
@@ -99,6 +98,7 @@ function doStashCpSingle {
 		
 		dSz=0
 		timestamp=$(date +%s)
+		timestamp=$(echo "$timestamp*1000" | bc)
 		payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
 		echo $payload > data.json
 		timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1 
@@ -125,6 +125,7 @@ function doStashCpSingle {
 		## send info out to flume
 		hn=$sourcePrefix
 		timestamp=$(date +%s)
+		timestamp=$(echo "$timestamp*1000" | bc)
 		xrdcpVersion="$(xrdcp -V 2>&1)"
 		payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
 		echo $payload > data.json
@@ -152,6 +153,7 @@ function doStashCpSingle {
 			## send info out to flume
 			hn=$sourcePrefix
 			timestamp=$(date +%s)
+			timestamp=$(echo "$timestamp*1000" | bc)
 			payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
 			echo $payload > data.json
 			timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1
@@ -203,6 +205,7 @@ function doStashCpSingle {
 			fi
 			
 			timestamp=$(date +%s)
+			timestamp=$(echo "$timestamp*1000" | bc)
 			payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
 			echo $payload > data.json
 			timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1
