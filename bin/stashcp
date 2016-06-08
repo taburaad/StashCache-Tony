@@ -89,9 +89,9 @@ function doStashCpSingle {
 	xrdcpVersion="$(xrdcp -V 2>&1)"
 
 	## First attempt
-	## Check destination directory for space
+	## Check destination directory for space in bytes
 	dirSpace=$(df -k $baseDir | tail -1 | awk '{print $3}')
-	noSpace=false
+	dirSpace=$(echo $dirSpace *1000 | /usr/bin/bc)
 	##if not enough space, curl jobStatus and exit
 	if [ $dirSpace -lt $mySz ]; then
 		jobStatus="Not enough space"
