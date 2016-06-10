@@ -180,7 +180,7 @@ function doStashCpSingle {
 				if [ $dSz -eq $mySz ]; then
 					jobStatus="Success"
 				else
-					jobStatus="No timeout but filesize does not match downloaded size"
+					jobStatus="Downloaded from trunk - No timeout but filesize does not match downloaded size"
 				fi
 				#dltm=$((dl3-st3))
 				if [ $2 ]; then
