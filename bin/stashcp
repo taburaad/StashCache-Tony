@@ -111,12 +111,16 @@ function doStashCpSingle {
 	dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 	res=$?
 	dl1=$(date +%s%3N)
+	echo "download attempt 1 complete. dSz=$dSz and exit code is $?"
 	if [ $res -eq 0 ]; then
 		## pull from local cache succeeded
+		echo "attempt 1: success"
 		if [ $dSz -eq $mySz ]; then
 			jobStatus="Success"
+			echo "attempt 1: size matches"
 		else
 			jobStatus="No timeout but filesize does not match downloaded size"
+			echo "attempt 1: No timeout but filesize does not match downloaded size"
 		fi
 		dltm=$((dl1-st1))
 		if [ $3 ]; then 	## update info only if I want to
@@ -139,12 +143,16 @@ function doStashCpSingle {
 		dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 		res=$?
 		dl2=$(date +%s%3N)
-		if [ $res -eq 0 ]; then 	
+		echo "download attempt 2 complete. dSz=$dSz and exit code is $?"
+		if [ $res -eq 0 ]; then 
+			echo "attempt 2: success"
 			## second attempt to pull from local cache succeeded
 			if [ $dSz -eq $mySz ]; then
 				jobStatus="Success"
+				echo "attempt 2: size matches"
 			else
 				jobStatus="No timeout but filesize does not match downloaded size"
+				echo "attempt 2: No timeout but filesize does not match downloaded size"
 			fi
 			dltm=$((dl2-st2))
 			if [ $2 ]; then 	## update info only if I want to
@@ -160,6 +168,7 @@ function doStashCpSingle {
 			rm data.json 2>&1
 		else 	
 			## second attempt to pull from local cache failed, pulling from trunk
+			echo "pulling from trunk"
 		    	if [ $debug -eq 2 ]; then	
 				## print out debug info
 				echo "Pull of $downloadFile from $sourcePrefix failed."
@@ -175,12 +184,15 @@ function doStashCpSingle {
 			res=$?
 			dl3=$(date +%s%3N)
 			dltm=$((dl3-st3))
+			echo "tunk pull dSz=$dSz and exit code is $?"
 			if [ $res -eq 0 ]; then
 				## pull from trunk succeeded
 				if [ $dSz -eq $mySz ]; then
-					jobStatus="Success"
+					jobStatus="Trunk Success"
+					echo "trunk success"
 				else
 					jobStatus="Downloaded from trunk - No timeout but filesize does not match downloaded size"
+					echo "Downloaded from trunk - No timeout but filesize does not match downloaded size"
 				fi
 				#dltm=$((dl3-st3))
 				if [ $2 ]; then
@@ -195,6 +207,7 @@ function doStashCpSingle {
 				#timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1
 				#rm data.json 2>&1
 			else
+				echo "trunk fail"
 				jobStatus="Timeout"
 				failfiles=("${failfiles[@]}" $downloadFile)
 				failtimes=("${failtimes[@]}" $st2)	## this is the last time something failed
