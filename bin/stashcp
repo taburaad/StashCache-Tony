@@ -99,7 +99,7 @@ function doStashCpSingle {
 		dSz=0
 		timestamp=$(date +%s)
 		timestamp=$(echo "$timestamp*1000" | bc)
-		payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
+		payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${sourcePrefix}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
 		echo $payload > data.json
 		timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1 
 		rm data.json 2>&1
@@ -107,7 +107,7 @@ function doStashCpSingle {
 	fi
 	
 	st1=$(date +%s%3N)
-	downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
+	./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
 	dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 	res=$?
 	dl1=$(date +%s%3N)
@@ -139,7 +139,7 @@ function doStashCpSingle {
 		## pull from local cache failed; try again
 		## Second attempt
 		st2=$(date +%s%3N)
-		downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz $tm xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
+		./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz $tm xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
 		dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 		res=$?
 		dl2=$(date +%s%3N)
@@ -179,7 +179,7 @@ function doStashCpSingle {
 			## Third attempt
 			hn="root://data.ci-connect.net"
 			st3=$(date +%s%3N)
-			downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $hn://$downloadFile $baseDir/$localPath 
+			./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $hn://$downloadFile $baseDir/$localPath 
 			dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 			res=$?
 			dl3=$(date +%s%3N)
