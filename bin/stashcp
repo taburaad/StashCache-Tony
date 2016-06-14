@@ -108,8 +108,8 @@ function doStashCpSingle {
 	
 	st1=$(date +%s%3N)
 	./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
-	dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 	res=$?
+	dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 	dl1=$(date +%s%3N)
 	echo "download attempt 1 complete. dSz=$dSz and exit code is $?"
 	if [ $res -eq 0 ]; then
@@ -140,8 +140,8 @@ function doStashCpSingle {
 		## Second attempt
 		st2=$(date +%s%3N)
 		./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz $tm xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
-		dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 		res=$?
+		dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 		dl2=$(date +%s%3N)
 		echo "download attempt 2 complete. dSz=$dSz and exit code is $?"
 		if [ $res -eq 0 ]; then 
@@ -180,8 +180,8 @@ function doStashCpSingle {
 			hn="root://data.ci-connect.net"
 			st3=$(date +%s%3N)
 			./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $hn://$downloadFile $baseDir/$localPath 
-			dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 			res=$?
+			dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 			dl3=$(date +%s%3N)
 			dltm=$((dl3-st3))
 			echo "tunk pull dSz=$dSz and exit code is $?"
