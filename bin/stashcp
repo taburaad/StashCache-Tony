@@ -92,20 +92,20 @@ function doStashCpSingle {
 	dirSpace=$(df -k $baseDir | tail -1 | awk '{print $3}')
 	dirSpace=$(echo $dirSpace *1000 | /usr/bin/bc)
 	##if not enough space, curl jobStatus and exit
-	if [ $dirSpace -lt $mySz ]; then
-		jobStatus="Not enough space"
-		echo "Stashcp of $downloadFile failed - not enough space in $baseDir. $dirSpace bytes available, file is $mySz bytes."
-		
-		dSz=0
-		timestamp=$(date +%s)
-		timestamp=$(echo "$timestamp*1000" | bc)
-		tries=0
-		payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
-		echo $payload > data.json
-		timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1 
-		rm data.json 2>&1
-		exit 1
-	fi
+	#if [ $dirSpace -lt $mySz ]; then
+	#	jobStatus="Not enough space"
+	#	echo "Stashcp of $downloadFile failed - not enough space in $baseDir. $dirSpace bytes available, file is $mySz bytes."
+	#	
+	#	dSz=0
+	#	timestamp=$(date +%s)
+	#	timestamp=$(echo "$timestamp*1000" | bc)
+	#	tries=0
+	#	payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
+	#	echo $payload > data.json
+	#	timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1 
+	#	rm data.json 2>&1
+	#	exit 1
+	#fi
 	
 	st1=$(date +%s%3N)
 	./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
@@ -133,7 +133,7 @@ function doStashCpSingle {
 		timestamp=$(date +%s)
 		timestamp=$(echo "$timestamp*1000" | bc)
 		xrdcpVersion="$(xrdcp -V 2>&1)"
-		payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
+		payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_exit\" : \"${res}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
 		echo $payload > data.json
 		timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1 
 		rm data.json 2>&1
@@ -165,7 +165,7 @@ function doStashCpSingle {
 			hn=$sourcePrefix
 			timestamp=$(date +%s)
 			timestamp=$(echo "$timestamp*1000" | bc)
-			payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
+			payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_exit\" : \"${res}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
 			echo $payload > data.json
 			timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1
 			rm data.json 2>&1
@@ -224,7 +224,7 @@ function doStashCpSingle {
 			
 			timestamp=$(date +%s)
 			timestamp=$(echo "$timestamp*1000" | bc)
-			payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
+			payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"xrdcp_exit\" : \"${res}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
 			echo $payload > data.json
 			timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1
 			rm data.json 2>&1
