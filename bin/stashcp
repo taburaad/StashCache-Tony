@@ -91,24 +91,9 @@ function doStashCpSingle {
 	## Check destination directory for space in bytes
 	dirSpace=$(df -k $baseDir | tail -1 | awk '{print $3}')
 	dirSpace=$(echo $dirSpace *1000 | /usr/bin/bc)
-	##if not enough space, curl jobStatus and exit
-	#if [ $dirSpace -lt $mySz ]; then
-	#	jobStatus="Not enough space"
-	#	echo "Stashcp of $downloadFile failed - not enough space in $baseDir. $dirSpace bytes available, file is $mySz bytes."
-	#	
-	#	dSz=0
-	#	timestamp=$(date +%s)
-	#	timestamp=$(echo "$timestamp*1000" | bc)
-	#	tries=0
-	#	payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_size\" : \"${dSz}\", \"download_time\" : \"${dltm}\",  \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"status\" : \"${jobStatus}\", \"tries\" : \"${tries}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
-	#	echo $payload > data.json
-	#	timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1 
-	#	rm data.json 2>&1
-	#	exit 1
-	#fi
 	
 	st1=$(date +%s%3N)
-	./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
+	downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
 	res=$?
 	dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 	dl1=$(date +%s%3N)
@@ -119,10 +104,8 @@ function doStashCpSingle {
 		if [ $dSz -eq $mySz ]; then
 			jobStatus="Success"
 			tries=1
-			echo "attempt 1: size matches"
 		else
 			jobStatus="No timeout but filesize does not match downloaded size"
-			echo "attempt 1: No timeout but filesize does not match downloaded size"
 		fi
 		dltm=$((dl1-st1))
 		if [ $3 ]; then 	## update info only if I want to
@@ -141,7 +124,7 @@ function doStashCpSingle {
 		## pull from local cache failed; try again
 		## Second attempt
 		st2=$(date +%s%3N)
-		./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz $tm xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
+		downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz $tm xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
 		res=$?
 		dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 		dl2=$(date +%s%3N)
@@ -152,10 +135,8 @@ function doStashCpSingle {
 			if [ $dSz -eq $mySz ]; then
 				jobStatus="Success"
 				tries=2
-				echo "attempt 2: size matches"
 			else
 				jobStatus="No timeout but filesize does not match downloaded size"
-				echo "attempt 2: No timeout but filesize does not match downloaded size"
 			fi
 			dltm=$((dl2-st2))
 			if [ $2 ]; then 	## update info only if I want to
@@ -171,7 +152,6 @@ function doStashCpSingle {
 			rm data.json 2>&1
 		else 	
 			## second attempt to pull from local cache failed, pulling from trunk
-			echo "pulling from trunk"
 		    	if [ $debug -eq 2 ]; then	
 				## print out debug info
 				echo "Pull of $downloadFile from $sourcePrefix failed."
@@ -182,21 +162,18 @@ function doStashCpSingle {
 			## Third attempt
 			hn="root://data.ci-connect.net"
 			st3=$(date +%s%3N)
-			./downloading_timeout2.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $hn://$downloadFile $baseDir/$localPath 
+			downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $hn://$downloadFile $baseDir/$localPath 
 			res=$?
 			dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 			dl3=$(date +%s%3N)
 			dltm=$((dl3-st3))
-			echo "tunk pull dSz=$dSz and exit code is $?"
 			if [ $res -eq 0 ]; then
 				## pull from trunk succeeded
 				if [ $dSz -eq $mySz ]; then
 					jobStatus="Trunk Success"
 					tries=3
-					echo "trunk success"
 				else
 					jobStatus="Downloaded from trunk - No timeout but filesize does not match downloaded size"
-					echo "Downloaded from trunk - No timeout but filesize does not match downloaded size"
 				fi
 				#dltm=$((dl3-st3))
 				if [ $2 ]; then
@@ -204,14 +181,7 @@ function doStashCpSingle {
 				fi
 				failoverfiles=("${failoverfiles[@]}" $downloadFile)
 				failovertimes=("${failovertimes[@]}" $st2) # time that the failed pull started
-				## send info out to flume
-				#timestamp=$(date +%s)
-				#payload="{ \"timestamp\" : \"${timestamp}\", \"host\" : \"${hn}\",\"filename\" : \"${downloadFile}\", \"filesize\" : \"${mySz}\", \"download_time\" : \"${dltm}\", \"sitename\" : \"${OSG_SITE_NAME}\", \"destination_space\" : \"${dirSpace}\", \"no_space\" : \"${noSpace}\", \"xrdcp_version\" : \"${xrdcpVersion}\"}"
-				#echo $payload > data.json
-				#timeout 10 curl -XPOST uct2-int.mwt2.org:9951 -d @data.json > /dev/null 2>&1
-				#rm data.json 2>&1
 			else
-				echo "trunk fail"
 				tries=3
 				jobStatus="Timeout"
 				failfiles=("${failfiles[@]}" $downloadFile)
