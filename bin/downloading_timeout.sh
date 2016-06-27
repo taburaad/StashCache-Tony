@@ -17,6 +17,7 @@ start_watchdog(){
     prevSize=0
     newSize=0
     SERVICE='xrdcp'
+    user=$(whoami)
     while (( newSize<expSize ))
     do 
         sleep $timeout #check status after every x seconds
@@ -30,10 +31,10 @@ start_watchdog(){
             fi
             if [ $newSize -lt $wantSize ]; then #if time out
                 echo "killing process after timeout of $timeout seconds"
-                if ps ax | grep -v grep | grep $SERVICE > /dev/null
+                if ps ax -u $user | grep -v grep | grep $SERVICE > /dev/null
                 then
                     #xrdcp running, kill xrdcp now
-                    pgrep xrdcp | xargs kill -9
+                    pgrep -u $user xrdcp | xargs kill -9
                     exit 1
                 else
                     #xrdcp already aborted on its own, use xrdcp exit code
@@ -46,11 +47,10 @@ start_watchdog(){
             fi
         else
             #file does not exist (timeout)
-            echo "download did not start - killing process after timeout of $timeout seconds"
-            if ps ax | grep -v grep | grep $SERVICE > /dev/null
+            if ps ax -u $user | grep -v grep | grep $SERVICE > /dev/null
             then
                 #xrdcp running, killing now
-                pgrep xrdcp | xargs kill -9
+                pgrep -u $user xrdcp | xargs kill -9
                 exit 1
             else
                #xrdcp not running, use xrdcp exit code
@@ -68,6 +68,6 @@ start_watchdog "$timeout" "$file" "$diff" "$expSize" &
 watchdog_pid=$!
 "$@"
 cp_exit=$?
-
+# If the cp command exits, kill the watchdog
 kill $watchdog_pid
 exit $cp_exit
