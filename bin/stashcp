@@ -90,14 +90,13 @@ function doStashCpSingle {
 	## First attempt
 	## Check destination directory for space in bytes
 	dirSpace=$(df -k $baseDir | tail -1 | awk '{print $3}')
-	dirSpace=$(echo $dirSpace *1000 | /usr/bin/bc)
+	dirSpace=$(echo $((dirSpace *1000)))
 	
 	st1=$(date +%s%3N)
 	downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
 	res=$?
 	dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 	dl1=$(date +%s%3N)
-	echo "download attempt 1 complete. dSz=$dSz and exit code is $?"
 	if [ $res -eq 0 ]; then
 		## pull from local cache succeeded
 		echo "attempt 1: success"
