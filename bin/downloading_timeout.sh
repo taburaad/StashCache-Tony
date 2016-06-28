@@ -61,7 +61,7 @@ start_watchdog(){
     
 }
 
-start_watchdog "$timeout" "$file" "$diff" "$expSize" &
+start_watchdog "$timeout" "$file" "$diff" "$expSize" "$xpid" &
 watchdog_pid=$!
 "$@"
 cp_exit=$?
