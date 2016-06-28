@@ -1,9 +1,10 @@
-while getopts "t:f:d:s:" opt; do
+while getopts "t:f:d:s:p:" opt; do
   case "$opt" in
       t) timeout=$OPTARG ;;
       f) file=$OPTARG ;;
       d) diff=$OPTARG ;;
       s) expSize=$OPTARG ;;
+      p) xpid=$OPTARG ;;
   esac
 done
 shift $((OPTIND-1))
@@ -14,10 +15,9 @@ start_watchdog(){
     file="$2"
     diff="$3"
     expSize="$4"
+    xpid="$5"
     prevSize=0
     newSize=0
-    SERVICE='xrdcp'
-    user=$(whoami)
     while (( newSize<expSize ))
     do 
         sleep $timeout #check status after every x seconds
@@ -31,11 +31,10 @@ start_watchdog(){
             fi
             if [ $newSize -lt $wantSize ]; then #if time out
                 echo "killing process after timeout of $timeout seconds"
-                if ps ax -u $user | grep -v grep | grep $SERVICE > /dev/null
+                if ps -p $xpid > /dev/null
                 then
                     #xrdcp running, kill xrdcp now
-                    pgrep -u $user xrdcp | xargs kill -9
-                    exit 1
+                    kill -9 $xpid
                 else
                     #xrdcp already aborted on its own, use xrdcp exit code
                     xrdcp_abort=$?
@@ -47,17 +46,15 @@ start_watchdog(){
             fi
         else
             #file does not exist (timeout)
-            if ps ax -u $user | grep -v grep | grep $SERVICE > /dev/null
+            if ps -p $xpid > /dev/null
             then
                 #xrdcp running, killing now
-                pgrep -u $user xrdcp | xargs kill -9
-                exit 1
+                kill -9 $xpid
             else
                #xrdcp not running, use xrdcp exit code
                 xrdcp_abort=$?
                 exit $xrdcp_abort
             fi
-        
         fi
     done
     
