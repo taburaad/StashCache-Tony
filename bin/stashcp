@@ -93,7 +93,8 @@ function doStashCpSingle {
 	dirSpace=$(echo $((dirSpace *1000)))
 	
 	st1=$(date +%s%3N)
-	downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
+	xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath & pid=$!
+	./timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz -p $pid
 	res=$?
 	dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 	dl1=$(date +%s%3N)
@@ -123,7 +124,8 @@ function doStashCpSingle {
 		## pull from local cache failed; try again
 		## Second attempt
 		st2=$(date +%s%3N)
-		downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz $tm xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath 
+		xrdcp $xrdargs -f $sourcePrefix://$downloadFile $baseDir/$localPath & pid=$!
+		./timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz -p $pid		
 		res=$?
 		dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 		dl2=$(date +%s%3N)
@@ -161,7 +163,8 @@ function doStashCpSingle {
 			## Third attempt
 			hn="root://data.ci-connect.net"
 			st3=$(date +%s%3N)
-			downloading_timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz xrdcp $xrdargs -f $hn://$downloadFile $baseDir/$localPath 
+			xrdcp $xrdargs -f $hn://$downloadFile $baseDir/$localPath & pid=$!
+			./timeout.sh -t $seconds -d $diff -f $baseDir/$localPath -s $mySz -p $pid
 			res=$?
 			dSz=$(du -b -s $baseDir/$localPath | cut -f -1)
 			dl3=$(date +%s%3N)
