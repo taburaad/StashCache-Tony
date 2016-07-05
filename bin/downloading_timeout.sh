@@ -45,7 +45,7 @@ wait $xrdpid
 xrd_exit=$?
 
 # If xrdcp command exits, kill the watchdog and exit using xrdcp's exit code
-kill $watchdog_pid
+kill $watchdog_pid 2>/dev/null
 exit $xrd_exit
 
 ## Based on: http://fahdshariff.blogspot.com/2013/08/executing-shell-command-with-timeout.html
