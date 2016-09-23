@@ -30,15 +30,17 @@ else:
     print find_closest()
     sys.exit()
 
+#Set debug flag for xrdcp call
 if not args.debug:
     xrdargs=0
 else:
     xrdargs=1
 
+#set to 5 minutes
 TIMEOUT = 300
 DIFF = TIMEOUT * 10
 
-
+#For single file, try xrdcp on optimal cache 2 times, then xrdcp on the origin server
 def doStashCpSingle(sourceFile=source, destination=destination):
     xrdfs = subprocess.Popen(["xrdfs", "root://stash.osgconnect.net", "stat", sourceFile], stdout=subprocess.PIPE).communicate()[0]
     fileSize=int(re.findall(r"Size:   \d+",xrdfs)[0].split(":   ")[1])
@@ -63,7 +65,7 @@ def doStashCpSingle(sourceFile=source, destination=destination):
     end2=0
     xrdexit2=-1
     xrdexit3=-1
-    if xrd_exit=='0': #worked first try
+    if xrd_exit=='0': #Worked first try
         dltime=end1-start1
         status = 'Success'
         tries=1
@@ -95,7 +97,7 @@ def doStashCpSingle(sourceFile=source, destination=destination):
             p.terminate()
         except:
             print "Error curling to ES"
-    else: #copy again using same cache
+    else: #Copy again using same cache
         print "1st try failed on %s, trying again" % cache
         date=datetime.datetime.now()
         start2=int(time.mktime(date.timetuple()))*1000
@@ -104,7 +106,7 @@ def doStashCpSingle(sourceFile=source, destination=destination):
         date=datetime.datetime.now()
         end2=int(time.mktime(date.timetuple()))*1000
         dlSz=os.stat(filename).st_size
-        if xrd_exit=='0': #worked second try
+        if xrd_exit=='0': #Worked second try
             status = 'Success'
             tries=2
             dltime=end2-start2
@@ -136,7 +138,7 @@ def doStashCpSingle(sourceFile=source, destination=destination):
                 p.terminate()
             except:
                 print "Error curling to ES"
-        else: #pull from origin
+        else: #Pull from origin
             print "2nd try failed on %s, pulling from origin" % cache
             cache="root://stash.osgconnect.net"
             command = "python ./timeout.py -t "+str(TIMEOUT)+ " -f "+sourceFile + " -d "+str(DIFF)+" -s "+str(fileSize)+" -x "+str(xrdargs)+" -c "+cache+" -z "+destination
@@ -185,7 +187,7 @@ def doStashCpSingle(sourceFile=source, destination=destination):
             except:
                 print "Error curling to ES"
 
-
+#Recursive directory copying
 def dostashcpdirectory(sourceDir=source, destination=destination):
     sourceItems = subprocess.Popen(["xrdfs", "root://stash.osgconnect.net", "ls", sourceDir], stdout=subprocess.PIPE).communicate()[0].split()
     for file in sourceItems:
@@ -198,7 +200,7 @@ def dostashcpdirectory(sourceDir=source, destination=destination):
             print 'Caching file'
             doStashCpSingle(sourceFile=file)
 
-
+#Send to ES. Will be indexed under "stashcp-*" where "*" is the month
 def es_send(payload):
     data=json.dumps(payload)
     try:
